@@ -19,7 +19,7 @@ interface ClassificationResult {
       activity: string
       student_labeled_spaces: string[]
       student_labeled_subspaces: string[]
-      result: number
+      result: number[]
       Reason: string
     }>
   }
@@ -59,15 +59,18 @@ export default function ResultsTable({ result }: ResultsTableProps) {
   result.final_labels.labels.forEach((label) => {
     const subspaces = label.student_labeled_subspaces
 
-    subspaces.forEach((subspace) => {
-      // Find matching subspace from HCD_SUBSPACES (case-insensitive)
+    subspaces.forEach((subspace, idx) => {
       const matchingSubspace = HCD_SUBSPACES.find((s) => s.toLowerCase() === subspace.toLowerCase())
 
       if (matchingSubspace) {
-        const currentWorst = subspaceResults.get(matchingSubspace) ?? 1
-        // -1 is worst, 0 is middle, 1 is best
-        if (label.result < currentWorst) {
-          subspaceResults.set(matchingSubspace, label.result)
+        const value = label.result?.[idx]
+        if (typeof value === "number") {
+          const currentWorst = subspaceResults.get(matchingSubspace)
+          if (currentWorst === undefined) {
+            subspaceResults.set(matchingSubspace, value)
+          } else {
+            subspaceResults.set(matchingSubspace, Math.min(currentWorst, value))
+          }
         }
       }
     })
@@ -131,8 +134,18 @@ export default function ResultsTable({ result }: ResultsTableProps) {
               <div key={index} className="rounded-lg border border-border bg-card p-4 text-card-foreground">
                 <div className="mb-2 flex items-start justify-between gap-4">
                   <h3 className="font-semibold text-foreground">{label.activity}</h3>
-                  <div className={`shrink-0 rounded px-2 py-1 text-xs font-medium ${getColorClass(label.result)}`}>
-                    {label.result}
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    {label.student_labeled_subspaces.map((sub, i) => {
+                      const value = label.result?.[i]
+                      return (
+                        <span
+                          key={`${sub}-${i}`}
+                          className={`rounded px-2 py-1 text-xs font-medium ${getColorClass(value!)}`}
+                        >
+                          {sub}: {typeof value === "number" ? value : ""}
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">

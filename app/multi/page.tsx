@@ -27,7 +27,7 @@ interface ClassificationResult {
       activity: string
       student_labeled_spaces: string[]
       student_labeled_subspaces: string[]
-      result: number
+      result: number[]
       Reason: string
     }>
   }

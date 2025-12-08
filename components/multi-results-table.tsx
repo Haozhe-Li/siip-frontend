@@ -25,7 +25,7 @@ interface ClassificationResult {
       activity: string
       student_labeled_spaces: string[]
       student_labeled_subspaces: string[]
-      result: number
+      result: number[]
       Reason: string
     }>
   }
@@ -68,13 +68,18 @@ export default function MultiResultsTable({ results }: MultiResultsTableProps) {
     result.final_labels.labels.forEach((label) => {
       const subspaces = label.student_labeled_subspaces
 
-      subspaces.forEach((subspace) => {
+      subspaces.forEach((subspace, idx) => {
         const matchingSubspace = HCD_SUBSPACES.find((s) => s.toLowerCase() === subspace.toLowerCase())
 
         if (matchingSubspace) {
-          const currentWorst = subspaceResults.get(matchingSubspace) ?? 1
-          if (label.result < currentWorst) {
-            subspaceResults.set(matchingSubspace, label.result)
+          const value = label.result?.[idx]
+          if (typeof value === "number") {
+            const currentWorst = subspaceResults.get(matchingSubspace)
+            if (currentWorst === undefined) {
+              subspaceResults.set(matchingSubspace, value)
+            } else {
+              subspaceResults.set(matchingSubspace, Math.min(currentWorst, value))
+            }
           }
         }
       })
