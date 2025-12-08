@@ -131,7 +131,7 @@ export default function MultiPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-4xl font-bold tracking-tight text-foreground">SIIP HCD Classifier - Multi-Week</h1>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight text-foreground">MatSE Senior Design LLM - Multi-Week</h1>
           <p className="text-muted-foreground">Upload multiple PDF reports and track progress across weeks</p>
         </div>
 

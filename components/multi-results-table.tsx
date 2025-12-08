@@ -115,6 +115,7 @@ export default function MultiResultsTable({ results }: MultiResultsTableProps) {
         scrollX: 0,
         scrollY: 0,
         useCORS: true,
+        foreignObjectRendering: true,
         onclone: (doc) => {
           try {
             doc.documentElement.classList.remove("dark")
@@ -123,6 +124,42 @@ export default function MultiResultsTable({ results }: MultiResultsTableProps) {
             const style = doc.createElement("style")
             style.setAttribute("data-export-overrides", "")
             style.textContent = `
+              /* Replace CSS variables using oklch/lab with sRGB hex for export */
+              :root {
+                --background: #ffffff;
+                --foreground: #0a0a0a;
+                --card: #ffffff;
+                --card-foreground: #0a0a0a;
+                --popover: #ffffff;
+                --popover-foreground: #0a0a0a;
+                --primary: #111827;
+                --primary-foreground: #f9fafb;
+                --secondary: #f3f4f6;
+                --secondary-foreground: #111827;
+                --muted: #f3f4f6;
+                --muted-foreground: #6b7280;
+                --accent: #f3f4f6;
+                --accent-foreground: #111827;
+                --destructive: #ef4444;
+                --destructive-foreground: #ffffff;
+                --border: #e5e7eb;
+                --input: #e5e7eb;
+                --ring: #d1d5db;
+                --chart-1: #60a5fa;
+                --chart-2: #34d399;
+                --chart-3: #a78bfa;
+                --chart-4: #fbbf24;
+                --chart-5: #f472b6;
+                --sidebar: #ffffff;
+                --sidebar-foreground: #0a0a0a;
+                --sidebar-primary: #111827;
+                --sidebar-primary-foreground: #f9fafb;
+                --sidebar-accent: #f3f4f6;
+                --sidebar-accent-foreground: #111827;
+                --sidebar-border: #e5e7eb;
+                --sidebar-ring: #d1d5db;
+              }
+
               /* Force simple RGB colors to avoid lab/oklch parsing */
               .bg-green-100 { background-color: #dcfce7 !important; }
               .text-green-900 { color: #14532d !important; }

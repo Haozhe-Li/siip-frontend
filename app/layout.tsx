@@ -9,7 +9,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SIIP HCD Classifier",
+  title: "MatSE Senior Design LLM",
   description: "Human-Centered Design Activity Classification Tool",
   generator: "v0.app",
   icons: {
