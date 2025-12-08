@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { Upload, Loader2, FileText, X, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import MultiResultsTable from "@/components/multi-results-table"
@@ -41,6 +42,7 @@ interface FileWithWeek {
 export default function MultiPage() {
   const [files, setFiles] = useState<FileWithWeek[]>([])
   const [loading, setLoading] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState<number>(0)
   const [results, setResults] = useState<{ week: number; result: ClassificationResult }[]>([])
   const [error, setError] = useState<string | null>(null)
 
@@ -79,6 +81,7 @@ export default function MultiPage() {
     setLoading(true)
     setError(null)
     setResults([])
+    setCurrentIndex(0)
 
     try {
       // Sort files by week
@@ -87,7 +90,9 @@ export default function MultiPage() {
       // Process each file in order
       const allResults: { week: number; result: ClassificationResult }[] = []
 
-      for (const fileWithWeek of sortedFiles) {
+      for (const [idx, fileWithWeek] of sortedFiles.entries()) {
+        // Update progress index before processing
+        setCurrentIndex(idx)
         const formData = new FormData()
         formData.append("file", fileWithWeek.file)
 
@@ -111,6 +116,7 @@ export default function MultiPage() {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setLoading(false)
+      setCurrentIndex(0)
     }
   }
 
@@ -191,6 +197,18 @@ export default function MultiPage() {
             </label>
 
             {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
+
+            {loading && files.length > 0 && (
+              <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Processing file {currentIndex + 1} of {files.length}</span>
+                  <span className="text-foreground">
+                    {Math.round(((currentIndex) / files.length) * 100)}%
+                  </span>
+                </div>
+                <Progress value={Math.round(((currentIndex) / files.length) * 100)} />
+              </div>
+            )}
 
             <Button onClick={handleSubmit} disabled={files.length === 0 || loading} className="w-full" size="lg">
               {loading ? (
