@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Upload, Loader2, FileText, X, ArrowLeft } from "lucide-react"
+import { Upload, Loader2, FileText, X, ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -128,12 +128,20 @@ export default function MultiPage() {
             <h2 className="font-semibold text-card-foreground">Multi-Week Analysis</h2>
             <p className="text-sm text-muted-foreground">Upload and track multiple PDFs across weeks</p>
           </div>
-          <Link href="/">
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <ArrowLeft className="h-4 w-4" />
-              Single PDF Mode
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                <ArrowLeft className="h-4 w-4" />
+                Single PDF Mode
+              </Button>
+            </Link>
+            <Link href="/label_data">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                Label Data
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="mb-8 text-center">

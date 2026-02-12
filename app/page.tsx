@@ -94,12 +94,20 @@ export default function Home() {
             <h2 className="font-semibold text-card-foreground">Single PDF Classification</h2>
             <p className="text-sm text-muted-foreground">Classify one PDF at a time</p>
           </div>
-          <Link href="/multi">
-            <Button variant="outline" className="gap-2 bg-transparent">
-              Multi-Week Analysis
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/multi">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                Multi-Week Analysis
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/label_data">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                Label Data
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="mb-8 text-center">
