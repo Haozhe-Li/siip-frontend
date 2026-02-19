@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Tag } from "lucide-react"
+import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Tag, AlertTriangle, Users } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 
@@ -19,6 +19,27 @@ interface LabelData {
     HCD_Subspace: string
     Reason: string
     Annotator: string
+}
+
+interface Annotation {
+    rowid: number
+    Activity: string
+    HCD_Space: string
+    HCD_Subspace: string
+    Reason: string
+    Annotator: string
+}
+
+interface ActivityGroup {
+    activity: string
+    count: number
+    annotators?: string[]
+    annotations: Annotation[]
+}
+
+interface ActivityAnnotationsResponse {
+    total_activities: number
+    groups: ActivityGroup[]
 }
 
 // HCD Design Process Classification
@@ -52,6 +73,8 @@ export default function LabelDataPage() {
     })
 
     const [rememberAnnotator, setRememberAnnotator] = useState(true)
+    const [activityAnnotations, setActivityAnnotations] = useState<ActivityAnnotationsResponse | null>(null)
+    const [loadingAnnotations, setLoadingAnnotations] = useState(false)
 
     const fetchUnlabeledActivity = async () => {
         setLoading(true)
@@ -138,6 +161,22 @@ export default function LabelDataPage() {
             setError(err instanceof Error ? err.message : "Failed to submit label")
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const fetchActivityAnnotations = async () => {
+        setLoadingAnnotations(true)
+        try {
+            const response = await fetch("/api/activity-annotations")
+            if (!response.ok) {
+                throw new Error("Failed to fetch activity annotations")
+            }
+            const data = await response.json()
+            setActivityAnnotations(data)
+        } catch (err) {
+            console.error("Error fetching activity annotations:", err)
+        } finally {
+            setLoadingAnnotations(false)
         }
     }
 
@@ -369,6 +408,165 @@ export default function LabelDataPage() {
                                 </Button>
                             </form>
                         )}
+                    </CardContent>
+                </Card>
+
+                {/* Activity Annotations Section */}
+                <Card className="mt-8 border-border/50 shadow-2xl backdrop-blur-sm bg-card/95">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Users className="h-5 w-5 text-primary" />
+                            <CardTitle className="text-xl">Annotation Conflicts</CardTitle>
+                        </div>
+                        <CardDescription>Activities with multiple conflicting annotations shown side-by-side for comparison</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button
+                            onClick={fetchActivityAnnotations}
+                            disabled={loadingAnnotations}
+                            variant="outline"
+                            className="mb-6 gap-2"
+                        >
+                            {loadingAnnotations ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Fetching...
+                                </>
+                            ) : (
+                                <>
+                                    <AlertTriangle className="h-4 w-4" />
+                                    Fetch Activity Annotations
+                                </>
+                            )}
+                        </Button>
+
+                        {activityAnnotations && (() => {
+                            const conflictCount = activityAnnotations.groups.filter(g => {
+                                const spaces = new Set(g.annotations.map(a => a.HCD_Space))
+                                const subspaces = new Set(g.annotations.map(a => a.HCD_Subspace))
+                                return spaces.size > 1 || subspaces.size > 1
+                            }).length
+
+                            return (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-6 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-muted-foreground">Total Groups:</span>
+                                            <span className="font-semibold text-foreground">{activityAnnotations.total_activities}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-2 w-2 rounded-full bg-amber-500" />
+                                            <span className="text-muted-foreground">Conflicts:</span>
+                                            <span className="font-semibold text-amber-600 dark:text-amber-400">{conflictCount}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                                            <span className="text-muted-foreground">Consistent:</span>
+                                            <span className="font-semibold text-green-600 dark:text-green-400">{activityAnnotations.total_activities - conflictCount}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {activityAnnotations.groups.map((group, index) => {
+                                            const spaceValues = group.annotations.map(a => a.HCD_Space)
+                                            const subspaceValues = group.annotations.map(a => a.HCD_Subspace)
+                                            const spaceConflict = new Set(spaceValues).size > 1
+                                            const subspaceConflict = new Set(subspaceValues).size > 1
+                                            const hasConflict = spaceConflict || subspaceConflict
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className={`rounded-xl overflow-hidden shadow-sm border ${hasConflict
+                                                        ? "border-amber-200/70 dark:border-amber-800/50"
+                                                        : "border-green-200/70 dark:border-green-800/50"
+                                                        }`}
+                                                >
+                                                    {/* Activity header */}
+                                                    <div className={`flex items-center gap-3 px-5 py-3 border-b ${hasConflict
+                                                        ? "bg-amber-50/70 dark:bg-amber-900/20 border-amber-200/60 dark:border-amber-800/40"
+                                                        : "bg-green-50/70 dark:bg-green-900/20 border-green-200/60 dark:border-green-800/40"
+                                                        }`}>
+                                                        {hasConflict
+                                                            ? <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
+                                                            : <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500 dark:text-green-400" />
+                                                        }
+                                                        <p className="font-medium text-foreground flex-1 text-sm">{group.activity}</p>
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            {/* Annotator chips */}
+                                                            {(group.annotators ?? group.annotations.map(a => a.Annotator)).map((name, i) => (
+                                                                <span
+                                                                    key={i}
+                                                                    className="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5 bg-background/70 border border-border/50 text-foreground"
+                                                                >
+                                                                    <span className="h-4 w-4 rounded-full bg-primary/20 text-primary text-[10px] font-bold inline-flex items-center justify-center shrink-0">{i + 1}</span>
+                                                                    {name}
+                                                                </span>
+                                                            ))}
+                                                            <span className={`text-xs font-semibold rounded-full px-2.5 py-0.5 ring-1 ${hasConflict
+                                                                ? "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 ring-amber-300/60 dark:ring-amber-700/40"
+                                                                : "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 ring-green-300/60 dark:ring-green-700/40"
+                                                                }`}>
+                                                                {hasConflict ? "Conflict" : "Consistent"}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">{group.count} annotations</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Side-by-side comparison grid */}
+                                                    <div
+                                                        className="grid divide-x divide-border/50"
+                                                        style={{ gridTemplateColumns: `repeat(${group.annotations.length}, minmax(0, 1fr))` }}
+                                                    >
+                                                        {group.annotations.map((annotation, idx) => (
+                                                            <div key={annotation.rowid} className="p-4 space-y-3 bg-card">
+                                                                {/* Annotator badge */}
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                                                                        {idx + 1}
+                                                                    </span>
+                                                                    <span className="font-semibold text-sm text-foreground truncate">{annotation.Annotator}</span>
+                                                                </div>
+
+                                                                {/* HCD Space — highlight if conflicting */}
+                                                                <div>
+                                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">HCD Space</p>
+                                                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${spaceConflict
+                                                                        ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 ring-amber-300/60 dark:ring-amber-700/40"
+                                                                        : "bg-primary/10 text-primary ring-primary/20"
+                                                                        }`}>
+                                                                        {annotation.HCD_Space}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Process — highlight if conflicting */}
+                                                                <div>
+                                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Process</p>
+                                                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${subspaceConflict
+                                                                        ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 ring-amber-300/60 dark:ring-amber-700/40"
+                                                                        : "bg-secondary text-secondary-foreground ring-border/30"
+                                                                        }`}>
+                                                                        {annotation.HCD_Subspace}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Reason */}
+                                                                <div>
+                                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Reason</p>
+                                                                    <p className="text-xs text-muted-foreground leading-relaxed bg-muted/40 rounded-md p-2.5">
+                                                                        {annotation.Reason || <span className="italic opacity-50">No reason provided</span>}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            )
+                        })()}
                     </CardContent>
                 </Card>
             </div>
