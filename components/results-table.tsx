@@ -90,14 +90,14 @@ export default function ResultsTable({ result }: ResultsTableProps) {
       <Card>
         <CardHeader>
           <CardTitle>Classification Results</CardTitle>
-          <CardDescription>HCD Subspace classification results (Green = 1, Yellow = 0, Red = -1)</CardDescription>
+          <CardDescription>Process classification results (Green = 1, Yellow = 0, Red = -1)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-semibold">HCD Subspace</TableHead>
+                  <TableHead className="font-semibold">Process</TableHead>
                   <TableHead className="font-semibold">Result</TableHead>
                 </TableRow>
               </TableHeader>

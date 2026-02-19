@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2, CheckCircle2, ArrowRight, ArrowLeft, Tag } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 
 interface UnlabeledActivity {
@@ -27,10 +28,10 @@ const HCD_CLASSIFICATION = {
     IDEATE: ["Brainstorm", "Propose", "Plan", "Narrow Concepts"],
     PROTOTYPE: ["(Re)Create", "Engage", "Evaluate", "Iterate"],
     IMPLEMENT: [
-        "Develop Support for Your Idea",
-        "Evolve Your Solution",
-        "Look for Sustainability",
-        "Execute Your Best Idea"
+        "Develop",
+        "Evolve",
+        "Sustain",
+        "Execute"
     ]
 } as const
 
@@ -49,6 +50,8 @@ export default function LabelDataPage() {
         Reason: "",
         Annotator: ""
     })
+
+    const [rememberAnnotator, setRememberAnnotator] = useState(true)
 
     const fetchUnlabeledActivity = async () => {
         setLoading(true)
@@ -83,6 +86,11 @@ export default function LabelDataPage() {
 
     useEffect(() => {
         fetchUnlabeledActivity()
+        // Load saved annotator name
+        const savedAnnotator = localStorage.getItem("savedAnnotatorName")
+        if (savedAnnotator) {
+            setFormData(prev => ({ ...prev, Annotator: savedAnnotator }))
+        }
     }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -116,6 +124,14 @@ export default function LabelDataPage() {
 
             const result = await response.json()
             console.log("Label submitted:", result)
+
+            // Save annotator name if remember is checked
+            if (rememberAnnotator) {
+                localStorage.setItem("savedAnnotatorName", formData.Annotator)
+            } else {
+                localStorage.removeItem("savedAnnotatorName")
+            }
+
             setSubmitted(true)
         } catch (err) {
             console.error("Error submitting label:", err)
@@ -253,7 +269,7 @@ export default function LabelDataPage() {
 
                                     <div className="space-y-2">
                                         <label htmlFor="hcd-subspace" className="text-sm font-medium text-foreground">
-                                            HCD Subspace <span className="text-destructive">*</span>
+                                            Process <span className="text-destructive">*</span>
                                         </label>
                                         <Select
                                             value={formData.HCD_Subspace}
@@ -264,7 +280,7 @@ export default function LabelDataPage() {
                                             <SelectTrigger className="w-full">
                                                 <SelectValue placeholder={
                                                     formData.HCD_Space
-                                                        ? "Select HCD Subspace"
+                                                        ? "Select Process"
                                                         : "Select HCD Space first"
                                                 } />
                                             </SelectTrigger>
@@ -296,9 +312,24 @@ export default function LabelDataPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label htmlFor="annotator" className="text-sm font-medium text-foreground">
-                                            Annotator Name <span className="text-destructive">*</span>
-                                        </label>
+                                        <div className="flex items-center justify-between">
+                                            <label htmlFor="annotator" className="text-sm font-medium text-foreground">
+                                                Annotator Name <span className="text-destructive">*</span>
+                                            </label>
+                                            <div className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id="remember-annotator"
+                                                    checked={rememberAnnotator}
+                                                    onCheckedChange={(checked) => setRememberAnnotator(checked as boolean)}
+                                                />
+                                                <label
+                                                    htmlFor="remember-annotator"
+                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                                >
+                                                    Remember Me
+                                                </label>
+                                            </div>
+                                        </div>
                                         <input
                                             id="annotator"
                                             type="text"

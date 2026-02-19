@@ -201,7 +201,7 @@ export default function MultiResultsTable({ results }: MultiResultsTableProps) {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle>Classification Results</CardTitle>
-            <CardDescription>Multi-week HCD Subspace classification (Green = 1, Yellow = 0, Red = -1)</CardDescription>
+            <CardDescription>Multi-week Process classification (Green = 1, Yellow = 0, Red = -1)</CardDescription>
           </div>
           <Button onClick={exportToPNG} variant="outline" size="sm" className="gap-2 bg-transparent">
             <Download className="h-4 w-4" />
@@ -214,7 +214,7 @@ export default function MultiResultsTable({ results }: MultiResultsTableProps) {
           <Table ref={tableRef}>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-semibold">HCD Subspace</TableHead>
+                <TableHead className="font-semibold">Process</TableHead>
                 {weekResults.map(({ week }) => (
                   <TableHead key={week} className="text-center font-semibold">
                     Week {week}
