@@ -288,8 +288,11 @@ export default function LabelDataPage() {
                                             value={formData.HCD_Space}
                                             onValueChange={(value) => {
                                                 handleInputChange("HCD_Space", value)
-                                                // Reset subspace when space changes
-                                                handleInputChange("HCD_Subspace", "")
+                                                if (value === "UNKNOWN") {
+                                                    handleInputChange("HCD_Subspace", "UNKNOWN")
+                                                } else {
+                                                    handleInputChange("HCD_Subspace", "")
+                                                }
                                             }}
                                             required
                                         >
@@ -297,6 +300,7 @@ export default function LabelDataPage() {
                                                 <SelectValue placeholder="Select HCD Space" />
                                             </SelectTrigger>
                                             <SelectContent>
+                                                <SelectItem key="UNKNOWN" value="UNKNOWN">UNKNOWN</SelectItem>
                                                 {Object.keys(HCD_CLASSIFICATION).map((space) => (
                                                     <SelectItem key={space} value={space}>
                                                         {space}
@@ -324,13 +328,16 @@ export default function LabelDataPage() {
                                                 } />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {formData.HCD_Space &&
+                                                {formData.HCD_Space === "UNKNOWN" ? (
+                                                    <SelectItem key="UNKNOWN" value="UNKNOWN">UNKNOWN</SelectItem>
+                                                ) : (
+                                                    formData.HCD_Space &&
                                                     HCD_CLASSIFICATION[formData.HCD_Space as HCDSpace]?.map((subspace) => (
                                                         <SelectItem key={subspace} value={subspace}>
                                                             {subspace}
                                                         </SelectItem>
                                                     ))
-                                                }
+                                                )}
                                             </SelectContent>
                                         </Select>
                                     </div>
