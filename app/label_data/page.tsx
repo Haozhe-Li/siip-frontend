@@ -42,6 +42,12 @@ interface ActivityAnnotationsResponse {
     groups: ActivityGroup[]
 }
 
+interface LabelStats {
+    total: number
+    labeled: number
+    unlabeled: number
+}
+
 // HCD Design Process Classification
 const HCD_CLASSIFICATION = {
     UNDERSTAND: ["Explore", "Observe", "Empathize", "Reflect"],
@@ -64,6 +70,8 @@ export default function LabelDataPage() {
     const [submitting, setSubmitting] = useState(false)
     const [submitted, setSubmitted] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [stats, setStats] = useState<LabelStats | null>(null)
+    const [loadingStats, setLoadingStats] = useState(false)
 
     const [formData, setFormData] = useState<LabelData>({
         HCD_Space: "",
@@ -75,6 +83,20 @@ export default function LabelDataPage() {
     const [rememberAnnotator, setRememberAnnotator] = useState(true)
     const [activityAnnotations, setActivityAnnotations] = useState<ActivityAnnotationsResponse | null>(null)
     const [loadingAnnotations, setLoadingAnnotations] = useState(false)
+
+    const fetchStats = async () => {
+        setLoadingStats(true)
+        try {
+            const response = await fetch("/api/label-stats")
+            if (!response.ok) throw new Error("Failed to fetch stats")
+            const data = await response.json()
+            setStats(data)
+        } catch (err) {
+            console.error("Error fetching stats:", err)
+        } finally {
+            setLoadingStats(false)
+        }
+    }
 
     const fetchUnlabeledActivity = async () => {
         setLoading(true)
@@ -109,6 +131,7 @@ export default function LabelDataPage() {
 
     useEffect(() => {
         fetchUnlabeledActivity()
+        fetchStats()
         // Load saved annotator name
         const savedAnnotator = localStorage.getItem("savedAnnotatorName")
         if (savedAnnotator) {
@@ -156,6 +179,7 @@ export default function LabelDataPage() {
             }
 
             setSubmitted(true)
+            fetchStats()
         } catch (err) {
             console.error("Error submitting label:", err)
             setError(err instanceof Error ? err.message : "Failed to submit label")
@@ -211,6 +235,55 @@ export default function LabelDataPage() {
                             </Button>
                         </Link>
                     </div>
+                </div>
+
+                {/* Simplified Statistics Section */}
+                <div className="mb-8">
+                    <Card className="border-border/50 shadow-lg bg-card/80 backdrop-blur-sm overflow-hidden">
+                        <CardContent className="p-4">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                        <Tag className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs uppercase font-bold tracking-wider text-muted-foreground line-height-1">Labeling Progress</p>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-2xl font-bold">
+                                                {loadingStats ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : 
+                                                 stats ? `${((stats.labeled / stats.total) * 100).toFixed(1)}%` : "—"}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {loadingStats ? "" : stats ? `(${stats.labeled} / ${stats.total} total)` : ""}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex-1 max-w-md w-full">
+                                    <div className="flex justify-between text-xs mb-1.5">
+                                        <span className="text-green-600 dark:text-green-400 font-medium">Labeled: {stats?.labeled ?? 0}</span>
+                                        <span className="text-amber-600 dark:text-amber-400 font-medium">Remaining: {stats?.unlabeled ?? 0}</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-1000" 
+                                            style={{ width: stats ? `${(stats.labeled / stats.total) * 100}%` : "0%" }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={fetchStats} 
+                                    disabled={loadingStats}
+                                    className="p-2 hover:bg-muted rounded-full transition-colors shrink-0"
+                                    title="Refresh Statistics"
+                                >
+                                    <Loader2 className={`h-4 w-4 ${loadingStats ? "animate-spin text-primary" : "text-muted-foreground"}`} />
+                                </button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Main Card */}
