@@ -216,20 +216,20 @@ export default function LabelDataPage() {
         <main className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/10 p-6">
             <div className="mx-auto max-w-4xl">
                 {/* Header */}
-                <div className="mb-6 flex items-center justify-between rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-4 shadow-lg">
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-4 shadow-lg gap-4">
                     <div>
                         <h2 className="font-semibold text-card-foreground">Data Labeling Tool</h2>
                         <p className="text-sm text-muted-foreground">Annotate HCD activities</p>
                     </div>
-                    <div className="flex gap-2">
-                        <Link href="/">
-                            <Button variant="outline" className="gap-2">
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                        <Link href="/" className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full gap-2">
                                 <ArrowLeft className="h-4 w-4" />
                                 Single PDF Mode
                             </Button>
                         </Link>
-                        <Link href="/multi">
-                            <Button variant="outline" className="gap-2">
+                        <Link href="/multi" className="flex-1 sm:flex-none">
+                            <Button variant="outline" className="w-full gap-2">
                                 Multi-Week Analysis
                                 <ArrowRight className="h-4 w-4" />
                             </Button>

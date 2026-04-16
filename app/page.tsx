@@ -89,20 +89,20 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex items-center justify-between rounded-lg border border-border bg-card p-4">
+        <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border border-border bg-card p-4 gap-4">
           <div>
             <h2 className="font-semibold text-card-foreground">Single PDF Classification</h2>
             <p className="text-sm text-muted-foreground">Classify one PDF at a time</p>
           </div>
-          <div className="flex gap-2">
-            <Link href="/multi">
-              <Button variant="outline" className="gap-2 bg-transparent">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <Link href="/multi" className="flex-1 sm:flex-none">
+              <Button variant="outline" className="w-full gap-2 bg-transparent">
                 Multi-Week Analysis
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/label_data">
-              <Button variant="outline" className="gap-2 bg-transparent">
+            <Link href="/label_data" className="flex-1 sm:flex-none">
+              <Button variant="outline" className="w-full gap-2 bg-transparent">
                 Label Data
                 <ArrowRight className="h-4 w-4" />
               </Button>
